@@ -1,0 +1,87 @@
+plugins {
+	id 'org.springframework.boot' version '2.5.1'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+	id 'application'
+}
+
+application {
+	mainClassName = "com.example.host.OidcServerApplication"
+}
+
+//group = 'com.example'
+//version = '0.0.1-SNAPSHOT'
+//sourceCompatibility = '11'
+
+// Override the default (simulation) with -PenclaveMode=
+def mode = findProperty("enclaveMode")?.toString()?.toLowerCase() ?: "simulation"
+
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation "com.r3.conclave:conclave-host:$conclaveVersion"
+	runtimeOnly project(path: ":enclave", configuration: mode)
+
+	//runtimeOnly "org.slf4j:slf4j-simple:1.7.30"
+	//testImplementation "org.junit.jupiter:junit-jupiter:5.6.0"
+
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation "com.r3.conclave:conclave-client:$conclaveVersion"
+	testImplementation 'org.mockito:mockito-inline:+'
+
+}
+
+sourceSets {
+	intTest {
+		compileClasspath += main.output + test.output
+		runtimeClasspath += main.output + test.output
+		java {
+			srcDirs = ['src/integrationTest/java']
+		}
+	}
+}
+
+configurations {
+	intTestImplementation.extendsFrom implementation
+	intTestRuntimeOnly.extendsFrom runtimeOnly
+}
+
+dependencies {
+	intTestImplementation 'org.springframework.boot:spring-boot-starter-test'
+	intTestImplementation 'org.springframework.security:spring-security-test'
+	intTestImplementation "com.r3.conclave:conclave-client:$conclaveVersion"
+	intTestImplementation 'org.mockito:mockito-inline:+'
+
+	// WireMock, for stubbing an OIDC OP in integration test
+	intTestImplementation "com.github.tomakehurst:wiremock-jre8:$wireMockVersion"
+}
+
+/*
+integrationTest {
+	useJUnitPlatform()
+}
+ */
+
+tasks.register('integrationTest', Test) {
+	description = 'Runs the integration tests.'
+	group = 'verification'
+
+	testClassesDirs = sourceSets.intTest.output.classesDirs
+	classpath = sourceSets.intTest.runtimeClasspath
+
+	shouldRunAfter test
+}
+
+test {
+	useJUnitPlatform()
+}
+
+integrationTest {
+	useJUnitPlatform()
+}

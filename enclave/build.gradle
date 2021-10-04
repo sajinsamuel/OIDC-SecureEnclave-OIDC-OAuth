@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+    id 'com.r3.conclave.enclave'
+}
+
+version 'unspecified'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "com.r3.conclave:conclave-enclave"
+    //implementation 'org.springframework.security.oauth:spring-security-oauth2:2.5.1.RELEASE'
+    implementation 'org.springframework.security:spring-security-oauth2-jose:5.5.1'
+    //testImplementation "com.r3.conclave:conclave-testing"
+    testImplementation "com.r3.conclave:conclave-host:$conclaveVersion"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testImplementation 'org.mockito:mockito-core:3.+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+conclave {
+    productID = 1
+    revocationLevel = 0
+    //runtime = graalvm_native_image
+    runtime = avian
+}
+
+test {
+    useJUnitPlatform()
+}
